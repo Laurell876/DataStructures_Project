@@ -40,6 +40,7 @@ public class Driver {
 	//public static LetterQueue letterueue = new LetterQueue();
 	public static boolean bankrupt;
 	public static boolean loseTurn;
+	public static boolean puzzleCompleted;
 	
 	
 	public static void main(String[] args) {
@@ -62,7 +63,7 @@ public class Driver {
 	
 	
 	public static void start() {
-		
+		boolean incorrectguess = false;
 		currentRound = roundList.getHead().getData();
 		
 		int wheelPosition = 0;
@@ -70,58 +71,74 @@ public class Driver {
 		
 		System.out.println("\n\t\tGameplay Started");
 		for(int i=0;i<3;i++) { //loop for rounds
-			currentPlayer = PlayerList.getHead().getData();
+			//currentPlayer = PlayerList.getHead().getData();
 			 letters.destroy();
 			
-			boolean puzzleCompleted = false;
+			puzzleCompleted = false;
 			currentPuzzle = currentRound.getPuzzle();
 			puzzleProgress = ""; //resets puzzle progress for each round;
 			generateDashes();
 			
 			
 			for (int j = 0; j<3 ; j++) { //loop for each player in each round
+				changePlayer(j);
 				bankrupt = false;
 				loseTurn = false;
 
 				if(puzzleCompleted == false) {
 					System.out.println("Round: " + (i+1));
-					System.out.println("Category: " + currentRound.getClass());
+					System.out.println("Category: " + currentRound.getCategoryType());
 					System.out.println("Player Number: " + currentPlayer.getPlayerNo() + " Player Name: " + currentPlayer.getName());		
 					int spin = 1;
 					while(spin==1) {
+						incorrectguess =false;
 						wheelPosition = SpinWheel(wheelPosition);
+						
 						if(bankrupt==true || loseTurn == true) {
 							System.out.println("You have lost your turn");
+							incorrectguess = true;
+							spin = 4;
+							//break;
+						} else {
+							System.out.println("Puzzle: "+ puzzleProgress);
 							
-							break;
-						}
-						
-						System.out.println("Puzzle: "+ puzzleProgress);
-						
-						System.out.println("Please guess a letter");
-						String guess = in.next();
-						boolean letterGuessed = guessLetter(guess,false);
+							System.out.println("Please guess a letter");
+							String guess = in.next();
+							boolean letterGuessed = guessLetter(guess,false);
 
-						//this goes to the next round if the player guessed all the letters
-						if(!puzzleProgress.contains("_")) {
-							System.out.println("Puzzle completed");
-							currentRound.setRoundTotal(currentRound.getRoundTotal() + currentPlayer.getGrandTotal());
-							System.out.println("Round total: " + currentRound.getRoundTotal());
-							puzzleCompleted= true;
-							break;
+							//this goes to the next round if the player guessed all the letters
+							if(!puzzleProgress.contains("_")) {
+								System.out.println("Puzzle completed");
+								currentRound.setRoundTotal(currentRound.getRoundTotal() + currentPlayer.getGrandTotal());
+								System.out.println("Round total: " + currentRound.getRoundTotal());
+								puzzleCompleted= true;
+								//break;
+								//continue;
+								spin = 4;
+							} else {
+								if(letterGuessed) {
+									currentPlayer.setGrandTotal(currentPlayer.getGrandTotal() + cardOnWheel.getValue());
+									System.out.println("\nPlease Choose an Option: \n1. Spin Again \n2. Buy a Vowel \n3. Solve Puzzle");
+									spin = in.nextInt();
+								}
+								else {
+									puzzleCompleted= false;
+									System.out.println("You have not solved the puzzle");
+									currentPlayer.setGrandTotal(0);
+									System.out.println("New total: " + currentPlayer.getGrandTotal());
+									//break;
+									spin = 4;
+									incorrectguess = true;
+								}
+							}
+							
+							
 						}
 						
-						if(letterGuessed) {
-							System.out.println("\nPlease Choose an Option: \n1. Spin Again \n2. Buy a Vowel \n3. Solve Puzzle");
-							spin = in.nextInt();
-						}
-						else {
-							puzzleCompleted= false;
-							System.out.println("You have not solved the puzzle");
-							currentPlayer.setGrandTotal(0);
-							System.out.println("New total: " + currentPlayer.getGrandTotal());
-							break;
-						}
+						
+					}
+					if(incorrectguess) {
+						continue;
 					}
 					
 					if(spin == 2) {
@@ -294,7 +311,7 @@ public class Driver {
 			temp = temp.getNext();
 		}
 		currentPlayer = temp.getData();
-		
+		currentPlayer.setGrandTotal(0);
 
 	}
 	
@@ -320,7 +337,7 @@ public class Driver {
 
 		Round[] rounds = {
 				//case matters for search so leave in lower case
-				new Round(Person, roundTotal, "tom cruise"),
+				new Round(Person, roundTotal, "tomcruise"),
 				new Round(Place, roundTotal, "jamaica"),
 				new Round(Thing, roundTotal, "movie")
 		};
